@@ -3,19 +3,19 @@ clear all
 close all
 clc
 
-% Load dataset
+% Load dataset ------------------------------------------------------------
 
 % All dendrites
 load('dataset.mat');
-dataAll = dataset;
+data = dataset;
 
-numAll  = dataAll(:,1);
-typeAll = dataAll(:,2);
-xAll    = dataAll(:,3);   % cm
-yAll    = dataAll(:,4);   % cm
-zAll    = dataAll(:,5);   % cm
-rAll    = dataAll(:,6);   % cm
-parAll  = dataAll(:,7);   % parent index
+num  = data(:,1);
+type = data(:,2);
+x    = data(:,3);   % cm
+y    = data(:,4);   % cm
+z    = data(:,5);   % cm
+r    = data(:,6);   % cm
+par  = data(:,7);   % parent index
 
 % Apical dendrites
 load('datasetApical.mat');
@@ -43,24 +43,148 @@ parBas  = dataBas(:,7);   % parent index
 
 % Constants
 
-Ri   = 1;              % Ohm-cm
-Rm   = 1;              % Ohm-cm^2
+Ri   = 100;            % Ohm-cm
+Rm   = 10000;          % Ohm-cm^2
 Cm   = 1;              % muF/cm^2
-Iapp = 1;              % mA    
+Iapp = 1*10^(-9);              % mA    
 
 
-% 3D Visualization
+% 3D Visualization --------------------------------------------------------
 
 % All dendrites
-for i = numAll
-    ind = find(parAll==i);
-    
-    plot3([xAll(i), xAll(ind)], [yAll(i), yAll(ind)], [zAll(i), zAll(ind)]);
+t=0;
+figure(1);
+for i = num'
+    hold on
+    ind = find(par == i)';
+    % Origin
+    for j = ind
+        % Color of line, based on type
+        if type(j) == 1 %soma
+            LineSpec = 'r-';
+        elseif type(j) == 3 % basal dendrite
+            LineSpec = 'g-';
+        elseif type(j) == 4 % apical dendrite
+            LineSpec = 'm-';
+        end
+        plot3([x(i), x(j)], [y(i), y(j)], [z(i), z(j)], LineSpec)
+        
+    end
     
 end
-hold on
-% Soma
-plot3(xAll(1),yAll(1),zAll(1),'r.','MarkerSize',10);
+plot3(x(1),y(1),z(1),'r.','MarkerSize',15);
+
+% Compartment lengths and length constraint--------------------------------
+
+% Taking true length of soma from -1 to 1 to be length between num = 1 and num = 2
+
+% Compartment lengths in cm
+l = zeros(size(num));
+l(1) = sqrt((x(2)-x(1)).^2 + (y(2)-y(1)).^2 + (z(2)-z(1)).^2);
+for i = 2:numel(num)
+    xDist = x(i) - x(par(i));
+    yDist = y(i) - y(par(i));
+    zDist = z(i) - z(par(i));
+    
+    l(i) = sqrt(xDist^2 + yDist^2 + zDist^2);
+end
+
+% Lambdas
+lamb = sqrt(((r).*Rm)./(2*Ri)); % in cm
+
+% Electrotonic lengths
+L = l./lamb;
+
+
+% Defining conductances and capacitances ----------------------------------
+cm = 2*pi*r.*l*Cm;
+gi = (pi*r.^2)./(l*Ri);
+gm = 2*pi*(r.*l)./Rm;
+
+gi(1) = 0;
+
+
+% A matrix ----------------------------------------------------------------
+
+A = zeros(numel(num));
+
+% Conductances in A
+for i = num'
+    % On (i,i)th spot
+    A(i,i) = A(i,i) - gi(i) - gm(i);
+    
+    if i == 1
+        continue
+    end
+    
+    % On spots related to parents
+    parents = par(i);
+    
+    for j = parents
+        A(j,j) = A(j,j) - gi(i);
+        A(j,i) = A(j,i) + gi(i);
+        A(i,j) = A(i,j) + gi(i);
+    end
+    
+end
+
+% Divide by capacitance
+for i = num'
+    A(i,:) = A(i,:) ./ cm(i);
+end
+
+
+% B matrix ----------------------------------------------------------------
+B = diag(1./cm);
+
+
+% u matrix ----------------------------------------------------------------
+u = zeros(numel(num),1);
+u(603) = Iapp;                  % APPLYING CURRENT ARBITRARILY FOR NOW
+
+% Steady-state voltage (proof of concept) ---------------------------------
+vSS = -inv(A)*B*u;
+
+% Plotting steady state voltage as func of dimensionless dist from soma ---
+total = zeros(size(num));
+figure(2); hold on;
+for j = 2:numel(num)
+    
+    total(j) = L(j);
+    
+    k = par(j);
+    
+    while k ~= 1
+        
+        total(j) = total(j)+L(k);
+        
+        k = par(k);
+    end
+    
+    plot([total(par(j)), total(j)], [vSS(par(j)) vSS(j)],'b')
+    
+end
+hold off
+xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
+title('Steady state voltage');
+
+
+%% Voltage over time (ODEs)
+
+v0 = zeros(numel(num),1);
+tspan = [0,5e4]; % ?s
+
+tic
+[t,v] = ode23(@(t,v) A*v + B*u,tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(3)
+clf
+plot(t./tau, v(:,1))
+ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
+
 
 
 
