@@ -14,10 +14,12 @@ Vr = 130;           % [mV] Reversal potential of Ca2+
 a1 = (100-0)/(30-(-70));         % 1 [Hz/mV] Proportionality constant relating stim frequency to voltage
 b = -70;                         % [mV] Y-intercept of V(f) curve
 
-V = a1.*f + b;              % [mV] Postsynaptic potential
+V = @(f) a1.*f + b;              % [mV] Postsynaptic potential
 %Nf = func of fast NMDA rec;             % Fast: Magnitude of Ca2+ current thru NMDAR
 %Ns = func of slow NMDA rec;             % Slow: Magnitude of Ca2+ current thru NMDAR
+Nf = 1; Ns = 1;
 
+v = V(f);
 
 B = @(V) 1./(1 + exp(-0.062*V).*(Mg/3.57));
 H = @(V) B(V).*(V-Vr);
