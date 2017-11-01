@@ -5,29 +5,65 @@ clc
 
 % Constants
 % Defined according to Shouval 2001
-f = 100;            % [Hz] Stimulation frequency
-tauCa = 1;          % Decay time constant of Ca2+ in spine
-tauf = 1;           % Fast: Time constant of Ca2+ current thru NMDAR
-taus = 1;           % Slow: Time constant of Ca2+ current thru NMDAR
-Mg = 1;             % [mM] Magnesium concentration 
-Vr = 130;           % [mV] Reversal potential of Ca2+
-a1 = (100-0)/(30-(-70));         % 1 [Hz/mV] Proportionality constant relating stim frequency to voltage
-b = -70;                         % [mV] Y-intercept of V(f) curve
+f = 100;                 % [Hz] Stimulation frequency
+%tauCa = 0.001;          % Decay time constant of Ca2+ in spine
+%tauf = 0.001;           % Fast: Time constant of Ca2+ current thru NMDAR
+%taus = 0.001;           % Slow: Time constant of Ca2+ current thru NMDAR
+Mg = 1;                  % [mM] Magnesium concentration 
+Vr = 130;                % [mV] Reversal potential of Ca2+
+a = 1;                   % [Hz/mV] Proportionality constant relating stim frequency to voltage
+b = -100;                % [mV] Y-intercept of V(f) curve
 
-V = @(f) a1.*f + b;              % [mV] Postsynaptic potential
+V = @(f) a.*f + b;              % [mV] Postsynaptic potential
 %Nf = func of fast NMDA rec;             % Fast: Magnitude of Ca2+ current thru NMDAR
 %Ns = func of slow NMDA rec;             % Slow: Magnitude of Ca2+ current thru NMDAR
-Nf = 1; Ns = 1;
 
-v = V(f);
+
 
 B = @(V) 1./(1 + exp(-0.062*V).*(Mg/3.57));
-H = @(V) B(V).*(V-Vr);
-Gnmda = tauCa.*(tauf.*Nf + taus.*Ns);   % Gain of Ca2+ influx thru NMDA rec. They use 
+H = @(V) -B(V).*(V-Vr);
+% Gnmda = tauCa.*(tauf.*Nf + taus.*Ns);   % Gain of Ca2+ influx thru NMDA rec. They use 
                                         % Gnmda = 0.01 and 0.03
 
-CaSS = H(v).*f.*Gnmda;
-%%
+Gnmda = 0.01;
+
+v = V(f);                               % Voltage [mV]
+CaSS = @(f) H(V(f)).*f.*Gnmda;          % Ca2+ flux [mM/s]?
+
+% H(v) is in Volt/mM
+% f is in 1/s
+% Gnmda is in s^2 ? What is Nf and Ns in? Gnmda should be unitless?
+% Thus [Ca2+] is in Volt*s/mM ??
+
+% Plots
+
+% Voltage vs. Freq
+freq = 0:100;
+volt = V(freq);
+figure;
+plot(freq,volt); xlabel('Freqency [Hz]'); ylabel('Voltage [mV]');
+title('Voltage as function of stimulation frequency');
+
+% H as function of V
+v1 = -90:75;
+figure;
+plot(v1,H(v1)); xlabel('Voltage [mV]'); ylabel('H(v)');
+title('H as a function of Voltage');
+
+% B as a function of V
+figure;
+v2 = -100:75;
+plot(v2,B(v2)); xlabel('Voltage [mV]'); ylabel('B');
+title('B as a function of Voltage');
+
+% Ca2+ Steady-State as function of stimulation frequency
+f1 = 0:300;
+figure;
+plot(f1,CaSS(f1)); xlabel('Frequency [Hz]'); ylabel('[Ca^2^+] [mM]');
+title('Steady state [Ca^2^+] as function of stimulation frequency');
+
+%% Next step
+
 %Functions for phosphotase and kinase rates
 EK = @(ca) 1+100.*(ca.^2)./(64 + (ca.^2));
 EP = @(ca) 1+30.*(ca.^2)./(1+(ca.^2));
