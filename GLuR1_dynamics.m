@@ -6,6 +6,8 @@ clc
 % Constants
 % Defined according to Shouval 2001
 f = 20;                  % [Hz] Stimulation frequency (0.5-3Hz = LTD, >10 = LTP)
+fLTP = 40;
+fLTD = 10;
 Mg = 1;                  % [mM] Magnesium concentration 
 Vr = 130;                % [mV] Reversal potential of Ca2+
 a = 1;                   % [Hz/mV] Proportionality constant relating stim frequency to voltage
@@ -31,7 +33,11 @@ H = @(V) -B(V).*(V-Vr);                     % Voltage dependence of Ca current t
 v = V(f);                               % Voltage [mV]
 CaSS = @(f) H(V(f)).*f.*Gnmda;          % Steady state [Ca2+] [mM]
 
-Ca = CaSS(f)
+Ca = CaSS(f);
+
+CaLTP = CaSS(fLTP);
+CaLTD = CaSS(fLTD);
+
 
 % H(v) is in Volt/mM
 % f is in 1/s
@@ -107,10 +113,17 @@ plot(ca, gampa1);
 xlabel('Calcium'); ylabel('Conductance');
 title('AMPA Conductance');
 
+% AMPA conductance vs frequency
+
+figure
+plot(f1,gampa1/gampa1(1));
+xlabel('Frequency [Hz]'); ylabel('Conductance');
+title('AMPA Conductance vs. Frequency');
+
 %% Increase norepinephrine
 
-EK2 = EK2.*2; %Activation of CaMKII increases rate of phosphorylation of ser831
-EP1 = EP1./2; %Activation of PKA increases mean open time - decrease EP1
+EK2 = EK2.*4; %Activation of CaMKII increases rate of phosphorylation of ser831
+EP1 = EP1./4; %Activation of PKA increases mean open time - decrease EP1
 
 %Recalculate fraction in states
 A = (EP1.*EP2)./((EK2+EP2).*(EK1+EP1));
@@ -132,3 +145,42 @@ figure; hold on;
 plot(ca, gampa1, ca, gampa2);
 legend('No NE', 'NE applied', 'Location', 'Best');
 xlabel('Calcium'); ylabel('AMPA Conductance');
+
+% AMPA conductance vs frequency
+
+figure
+plot(f1,gampa2);
+xlabel('Frequency [Hz]'); ylabel('Conductance');
+title('AMPA Conductance vs. Frequency');
+
+
+% AMPA Conductance with and without NE
+
+figure
+plot(f1,gampa1/gampa1(1),f1,gampa2/gampa2(1));
+legend('No NE', 'With NE');
+xlabel('Frequency [Hz]'); ylabel('Conductance');
+title('AMPA Conductance vs. Frequency (with and without NE)');
+
+%% Individual states
+
+% LTP
+
+%Functions for phosphotase and kinase rates
+EK = @(ca) 1+100.*(ca.^2)./(64 + (ca.^2));
+EP = @(ca) 1+30.*(ca.^2)./(1+(ca.^2));
+
+EP1 = EP(CaLTP);
+EP2 = EP1;
+EK1 = EK(CaLTP);
+EK2 = EK1;
+
+%Calculate and plot fraction in each state
+A = (EP1.*EP2)./((EK2+EP2).*(EK1+EP1));
+Ap1 = (EK1.*EP2)./((EK2+EP2).*(EK1+EP1));
+Ap2 = (EK2.*EP1)./((EK2+EP2).*(EK1+EP1));
+Ap1p2 = (EK1.*EK2)./((EK2+EP2).*(EK1+EP1));
+
+%Model ampa conducatance (matches experimental)
+gampaLTP = (A + 2*(Ap1+Ap2) + 4*(Ap1p2))./gampa1(1);
+
