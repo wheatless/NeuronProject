@@ -4,6 +4,11 @@ close all
 clc
 
 % Load dataset ------------------------------------------------------------
+% num is label for that point
+% type is what the point is classified as
+% x, y, z are coordinates
+% r is radius of point
+% par is parent for that point
 
 % All dendrites
 load('dataset.mat');
@@ -171,8 +176,9 @@ title('Steady state voltage');
 
 %% Voltage over time (ODEs)
 
+% Constant current
 v0 = zeros(numel(num),1);
-tspan = [0,5e4]; % ?s
+
 
 tic
 [t,v] = ode23(@(t,v) A*v + B*u,tspan,v0);
@@ -186,10 +192,27 @@ plot(t./tau, v(:,1))
 ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
 
 
+%% Time-varying current
 
+% dvdt = M*D*r(t) ?
 
+% (2.39) dydt = inv(M)*A*M*y + inv(M)*B*u 
+%        v = M*y
+tspan = [0,5e4]; % µs
 
+M = diag(cm.^(-1/2));
+D = M\A*M;
+e = eig(D);
+capLamb = diag(e);
+% or (2.43) capLamb = inv(D)*(inv(M)*A*M)*D ?
+F = D'*inv(M)*B;
 
+init = [];      % Initial conditions
+
+%%
+tic
+[t1,v1] = ode23(@(t,v) M*D*r,tspan,init);
+toc
 
 
 
