@@ -6,13 +6,13 @@ clc
 % Constants
 % Defined according to Shouval 2001
 f = 20;                  % [Hz] Stimulation frequency (0.5-3Hz = LTD, >10 = LTP)
-fLTP = 30;
+fLTP = 30; 
 fLTD = 2.5;
 
 Mg = 1;                  % [mM] Magnesium concentration 
 Vr = 130;                % [mV] Reversal potential of Ca2+
 a = 1;                   % [Hz/mV] Proportionality constant relating stim frequency to voltage
-b = -70;                % [mV] Y-intercept of V(f) curve
+b = -70;                 % [mV] Y-intercept of V(f) curve
 Gnmda = 0.01;            % Taken from Shouval 2001
 
 
@@ -79,7 +79,8 @@ EP = @(ca) 1+30.*(ca.^2)./(1+(ca.^2));
 
 %Plot rates
 %ca = linspace(0,30,100);
-ca = CaSS(f1);
+% ca = CaSS(f1);
+ca = [CaSS(0) CaSS(30)];
 EP1 = EP(ca);
 EP2 = EP1;
 EK1 = EK(ca);
@@ -122,8 +123,8 @@ title('AMPA Conductance vs. Frequency');
 
 %% Increase norepinephrine
 
-EK2 = EK2.*4; %Activation of CaMKII increases rate of phosphorylation of ser831
-EP1 = EP1./4; %Activation of PKA increases mean open time - decrease EP1
+EK2 = EK2.*100; %Activation of CaMKII increases rate of phosphorylation of ser831
+EP1 = EP1./100; %Activation of PKA increases mean open time - decrease EP1
 
 %Recalculate fraction in states
 A = (EP1.*EP2)./((EK2+EP2).*(EK1+EP1));
@@ -159,12 +160,22 @@ title('AMPA Conductance vs. Frequency');
 % AMPA Conductance with and without NE
 
 figure
-plot(f1,gampa1/gampa1(1),f1,gampa2/gampa2(1));
+plot(f1,gampa1/gampa1(1),f1,gampa2./gampa1(1));
 legend('No NE', 'With NE');
 xlabel('Frequency [Hz]'); ylabel('Conductance');
 title('AMPA Conductance vs. Frequency (with and without NE)');
 
+
+
 %% Individual states
+
+% Current
+ErCa = -130         % [mV] reversal potential for Ca2+
+I = 130.*(ge./gm);      % ge chosen such that ge/gm = 10^(-10)
+                        % ge for different states chosen based on
+                        % calculated calculated conductances above
+                        
+                        
 
 % LTP
 
