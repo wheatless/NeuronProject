@@ -145,19 +145,19 @@ B = diag(1./cm);
 
 % u matrix ----------------------------------------------------------------
 u = zeros(numel(num),1);
-Iapp = 
-u(603) = Iapp;                  % APPLYING CURRENT ARBITRARILY FOR NOW
+Iapp = 10^(-9);               % mA
+u(603) = 1;                  % APPLYING CURRENT ARBITRARILY FOR NOW
 
 % Transient Iapp
 % Damped sinusoid
-Iapp1 = @(t) sin(0.001*t)./exp(t./10000);
+Iapp1 = @(t) (10^(-9))*sin(0.001*t)./exp(t./10000);
 
 % Step function
-Iapp2 = @(t) (t>=10000 & t<=20000);
+Iapp2 = @(t) (10^(-9))*(t>=10000 & t<=20000);
 
 
 % Steady-state voltage (proof of concept) ---------------------------------
-vSS = -inv(A)*B*u;
+vSS = -inv(A)*B*(u.*Iapp);
 
 % Plotting steady state voltage as func of dimensionless dist from soma ---
 total = zeros(size(num));
@@ -187,10 +187,10 @@ title('Steady state voltage');
 
 % Constant current
 v0 = zeros(numel(num),1);
-
+tspan = [0 5*10^4];
 
 tic
-[t,v] = ode23(@(t,v) A*v + B*u,tspan,v0);
+[t,v] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
 toc
 
 tau = Rm.*Cm;
@@ -200,28 +200,179 @@ clf
 plot(t./tau, v(:,1))
 ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
 
+save('1regular.mat','t','v');
 
-%% Time-varying current
 
-% dvdt = M*D*r(t) ?
+%% Transient current
+% Damped sinusoid
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
 
-% (2.39) dydt = inv(M)*A*M*y + inv(M)*B*u 
-%        v = M*y
-tspan = [0,5e4]; % µs
-
-M = diag(cm.^(-1/2));
-D = M\A*M;
-e = eig(D);
-capLamb = diag(e);
-% or (2.43) capLamb = inv(D)*(inv(M)*A*M)*D ?
-F = D'*inv(M)*B;
-
-init = [];      % Initial conditions
-
-%%
 tic
-[t1,v1] = ode23(@(t,v) M*D*r,tspan,init);
+[t1,v1] = ode23(@(t,v) A*v + B*(u.*Iapp1(t)),tspan,v0);
 toc
+
+tau = Rm.*Cm;
+
+figure(4)
+clf
+plot(t1./tau, v1(:,1))
+ylabel('Membrane potential at the soma [mV] in response to damped sinusoid'); xlabel('Dimensionless Time');
+
+save('2damped.mat','t1','v1');
+
+%% Step current
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+tic
+[t2,v2] = ode23(@(t,v) A*v + B*(u.*Iapp2(t)),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(5)
+clf
+plot(t2./tau, v2(:,1))
+ylabel('Membrane potential at the soma [mV] in response to step current'); xlabel('Dimensionless Time');
+
+save('3step.mat','t2','v2');
+
+
+%% Shoval calcium model, LTD
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = [];
+
+tic
+[t3,v3] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(6)
+clf
+plot(t3./tau, v3(:,1))
+ylabel('Membrane potential at the soma [mV], Shouval model, LTD'); xlabel('Dimensionless Time');
+
+save('4shouvalLTD.mat','t3','v3');
+
+
+%% Shouval calcium model, LTP
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = [];
+
+tic
+[t4,v4] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(7)
+clf
+plot(t4./tau, v4(:,1))
+ylabel('Membrane potential at the soma [mV], Shouval model, LTP'); xlabel('Dimensionless Time');
+
+save('5shouvalLTP.mat','t4','v4');
+
+
+%% Shouval calcium model (LTP) with NE, 0 min post-NE
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = [];
+
+tic
+[t5,v5] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(8)
+clf
+plot(t5./tau, v5(:,1))
+ylabel('Membrane potential at the soma [mV], 0 min post-NE'); xlabel('Dimensionless Time');
+
+save('5NE_0.mat','t5','v5');
+
+
+%% Shouval calcium model (LTP) with NE, 30 min post-NE
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = [];
+
+tic
+[t6,v6] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(9)
+clf
+plot(t6./tau, v6(:,1))
+ylabel('Membrane potential at the soma [mV], 30 min post-NE'); xlabel('Dimensionless Time');
+
+save('5NE_0.mat','t6','v6');
+
+%% Shouval calcium model (LTP) with NE, 90 min post-NE
+
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = [];
+
+tic
+[t7,v7] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure(10)
+clf
+plot(t7./tau, v7(:,1))
+ylabel('Membrane potential at the soma [mV], 90 min post-NE'); xlabel('Dimensionless Time');
+
+save('5NE_0.mat','t7','v7');
+
+
+
+
+
+
+
+
+
+%% UNUSED
+% %% Time-varying current
+% 
+% % dvdt = M*D*r(t) ?
+% 
+% % (2.39) dydt = inv(M)*A*M*y + inv(M)*B*u 
+% %        v = M*y
+% tspan = [0,5e4]; % µs
+% 
+% M = diag(cm.^(-1/2));
+% D = M\A*M;
+% e = eig(D);
+% capLamb = diag(e);
+% % or (2.43) capLamb = inv(D)*(inv(M)*A*M)*D ?
+% F = D'*inv(M)*B;
+% 
+% init = [];      % Initial conditions
+% 
+% %%
+% tic
+% [t1,v1] = ode23(@(t,v) M*D*r,tspan,init);
+% toc
 
 
 
