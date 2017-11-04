@@ -6,13 +6,15 @@ clc
 % Constants
 % Defined according to Shouval 2001
 f = 20;                  % [Hz] Stimulation frequency (0.5-3Hz = LTD, >10 = LTP)
-fLTP = 40;
-fLTD = 10;
+fLTP = 30;
+fLTD = 2.5;
+
 Mg = 1;                  % [mM] Magnesium concentration 
 Vr = 130;                % [mV] Reversal potential of Ca2+
 a = 1;                   % [Hz/mV] Proportionality constant relating stim frequency to voltage
-b = -100;                % [mV] Y-intercept of V(f) curve
+b = -70;                % [mV] Y-intercept of V(f) curve
 Gnmda = 0.01;            % Taken from Shouval 2001
+
 
 % UNUSED CONSTANTS
 % tauCa = 0.001;                          % Decay time constant of Ca2+ in spine
@@ -39,28 +41,23 @@ CaLTP = CaSS(fLTP);
 CaLTD = CaSS(fLTD);
 
 
-% H(v) is in Volt/mM
-% f is in 1/s
-% Gnmda should be unitless? But appears to be in s^2?
-% Thus [Ca2+] is in Volt*s/mM ??
-
 % Plots
 
-% Voltage vs. Freq
+% Voltage vs. Freq, Shouval 2001 Fig 3a
 freq = 0:100;
 volt = V(freq);
 figure;
 plot(freq,volt); xlabel('Freqency [Hz]'); ylabel('Voltage [mV]');
 title('Voltage as function of stimulation frequency');
 
-% H as function of V
+% H as function of V, Shouval 2002 Fig 5b
 v1 = -90:75;
 figure;
 plot(v1,H(v1)); xlabel('Voltage [mV]'); ylabel('H(v)');
 title('H as a function of Voltage');
 % Looks like Shouval 2002
 
-% B as a function of V
+% B as a function of V, Shouval 2002 Fig 5a
 figure;
 v2 = -100:75;
 plot(v2,B(v2)); xlabel('Voltage [mV]'); ylabel('B');
@@ -92,6 +89,7 @@ plot(ca, EP1, ca, EK1);
 legend('P1&P2', 'K1&K2', 'Location', 'Best');
 xlabel('Calcium'); ylabel('Rate (1/s)');
 title('Enzymatic Activity (no NE)');
+xlim([0,30]);
 
 %Calculate and plot fraction in each state
 A = (EP1.*EP2)./((EK2+EP2).*(EK1+EP1));
@@ -104,6 +102,7 @@ plot(ca, A, ca, Ap1, ca,Ap2, ca, Ap1p2);
 legend('A', 'Ap1', 'Ap2', 'Ap1p2', 'Location', 'Best');
 xlabel('Calcium'); ylabel('GLuR1 State Fractions');
 title('Phosophorylation (no NE)');
+xlim([0,30]);
 
 %Model ampa conducatance (matches experimental)
 gampa1 = A + 2*(Ap1+Ap2) + 4*(Ap1p2);
@@ -112,6 +111,7 @@ figure;
 plot(ca, gampa1);
 xlabel('Calcium'); ylabel('Conductance');
 title('AMPA Conductance');
+xlim([0,30]);
 
 % AMPA conductance vs frequency
 
@@ -136,6 +136,7 @@ plot(ca, A, ca, Ap1, ca,Ap2, ca, Ap1p2);
 legend('A', 'Ap1', 'Ap2', 'Ap1p2', 'Location', 'Best');
 xlabel('Calcium'); ylabel('GLuR1 State Fractions');
 title('Phosophorylation (NE applied)');
+xlim([0,30]);
 
 %recalculate ampa conducatance
 gampa2 = A + 2*(Ap1+Ap2) + 4*(Ap1p2);
@@ -145,6 +146,7 @@ figure; hold on;
 plot(ca, gampa1, ca, gampa2);
 legend('No NE', 'NE applied', 'Location', 'Best');
 xlabel('Calcium'); ylabel('AMPA Conductance');
+xlim([0,30]);
 
 % AMPA conductance vs frequency
 
