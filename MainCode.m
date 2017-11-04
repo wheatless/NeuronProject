@@ -145,7 +145,16 @@ B = diag(1./cm);
 
 % u matrix ----------------------------------------------------------------
 u = zeros(numel(num),1);
+Iapp = 
 u(603) = Iapp;                  % APPLYING CURRENT ARBITRARILY FOR NOW
+
+% Transient Iapp
+% Damped sinusoid
+Iapp1 = @(t) sin(0.001*t)./exp(t./10000);
+
+% Step function
+Iapp2 = @(t) (t>=10000 & t<=20000);
+
 
 % Steady-state voltage (proof of concept) ---------------------------------
 vSS = -inv(A)*B*u;
