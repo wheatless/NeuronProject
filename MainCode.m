@@ -183,11 +183,13 @@ xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
 title('Steady state voltage');
 
 
-%% Voltage over time (ODEs)
+%% VOLTAGE OVER TIME (ODEs)
 
 % Constant current
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
+
+Iapp = 10^(-9);         % [mA]
 
 tic
 [t,v] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
@@ -199,6 +201,7 @@ figure(3)
 clf
 plot(t./tau, v(:,1))
 ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV]');
 
 save('1regular.mat','t','v');
 
@@ -217,7 +220,8 @@ tau = Rm.*Cm;
 figure(4)
 clf
 plot(t1./tau, v1(:,1))
-ylabel('Membrane potential at the soma [mV] in response to damped sinusoid'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV] in response to damped sinusoid'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
 save('2damped.mat','t1','v1');
 
@@ -235,12 +239,15 @@ tau = Rm.*Cm;
 figure(5)
 clf
 plot(t2./tau, v2(:,1))
-ylabel('Membrane potential at the soma [mV] in response to step current'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV] in response to step current'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
 save('3step.mat','t2','v2');
 
 
-%% Shoval calcium model, LTD
+%% Channel dynamics at synapse, constant current again
+
+% Shoval calcium model, LTD
 
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
@@ -256,7 +263,8 @@ tau = Rm.*Cm;
 figure(6)
 clf
 plot(t3./tau, v3(:,1))
-ylabel('Membrane potential at the soma [mV], Shouval model, LTD'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV], Shouval model, LTD'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
 save('4shouvalLTD.mat','t3','v3');
 
@@ -277,7 +285,8 @@ tau = Rm.*Cm;
 figure(7)
 clf
 plot(t4./tau, v4(:,1))
-ylabel('Membrane potential at the soma [mV], Shouval model, LTP'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV], Shouval model, LTP'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
 save('5shouvalLTP.mat','t4','v4');
 
@@ -298,9 +307,10 @@ tau = Rm.*Cm;
 figure(8)
 clf
 plot(t5./tau, v5(:,1))
-ylabel('Membrane potential at the soma [mV], 0 min post-NE'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV], 0 min post-NE'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
-save('5NE_0.mat','t5','v5');
+save('6NE_0.mat','t5','v5');
 
 
 %% Shouval calcium model (LTP) with NE, 30 min post-NE
@@ -319,9 +329,10 @@ tau = Rm.*Cm;
 figure(9)
 clf
 plot(t6./tau, v6(:,1))
-ylabel('Membrane potential at the soma [mV], 30 min post-NE'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV], 30 min post-NE'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
-save('5NE_0.mat','t6','v6');
+save('7NE_30.mat','t6','v6');
 
 %% Shouval calcium model (LTP) with NE, 90 min post-NE
 
@@ -339,9 +350,10 @@ tau = Rm.*Cm;
 figure(10)
 clf
 plot(t7./tau, v7(:,1))
-ylabel('Membrane potential at the soma [mV], 90 min post-NE'); xlabel('Dimensionless Time');
+title('Membrane potential at the soma [mV], 90 min post-NE'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
 
-save('5NE_0.mat','t7','v7');
+save('8NE_90.mat','t7','v7');
 
 
 
