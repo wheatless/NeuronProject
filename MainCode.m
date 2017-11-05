@@ -51,7 +51,7 @@ parBas  = dataBas(:,7);   % parent index
 Ri   = 100;            % Ohm-cm
 Rm   = 10000;          % Ohm-cm^2
 Cm   = 1;              % muF/cm^2
-Iapp = 1*10^(-9);              % mA    
+Iapp = 1.3*10^(-9);              % mA    
 
 
 % 3D Visualization --------------------------------------------------------
@@ -78,8 +78,19 @@ for i = num'
     
 end
 plot3(x(1),y(1),z(1),'r.','MarkerSize',15);
+plot3(x(570),y(570),z(570),'bx','MarkerSize',10);
 
-% Compartment lengths and length constraint--------------------------------
+% Find where branches end -------------------------------------------------
+
+ends = ~ismember(num,par);
+endIndex = find(ends==1);
+
+% Choosing end to apply current
+
+
+
+
+%% Compartment lengths and length constraint--------------------------------
 
 % Taking true length of soma from -1 to 1 to be length between num = 1 and num = 2
 
@@ -145,18 +156,18 @@ B = diag(1./cm);
 
 % u matrix ----------------------------------------------------------------
 u = zeros(numel(num),1);
-Iapp = 10^(-9);               % mA
-u(603) = 1;                  % APPLYING CURRENT ARBITRARILY FOR NOW
+Iapp = 1.3*10^(-9);               % mA
+u(570) = 1;                  % APPLYING CURRENT ARBITRARILY FOR NOW
 
 % Transient Iapp
 % Damped sinusoid
-Iapp1 = @(t) (10^(-9))*sin(0.001*t)./exp(t./10000);
+Iapp1 = @(t) (1.3*10^(-9))*sin(0.001*t)./exp(t./10000);
 
 % Step function
-Iapp2 = @(t) (10^(-9))*(t>=10000 & t<=20000);
+Iapp2 = @(t) (1.3*10^(-9))*(t>=10000 & t<=20000);
 
 
-% Steady-state voltage (proof of concept) ---------------------------------
+% Steady-state voltage ----------------------------------------------------
 vSS = -inv(A)*B*(u.*Iapp);
 
 % Plotting steady state voltage as func of dimensionless dist from soma ---
@@ -189,7 +200,7 @@ title('Steady state voltage');
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = 10^(-9);         % [mA]
+Iapp = 1.3*10^(-9);         % [mA]
 
 tic
 [t,v] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
@@ -204,7 +215,10 @@ ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
 title('Membrane potential at the soma [mV]');
 
 save('1regular.mat','t','v');
+save('1regularvSS.mat','vSS');
 
+load handel
+sound(y,Fs)
 
 %% Transient current
 % Damped sinusoid
@@ -225,6 +239,9 @@ ylabel('Membrane potential at the soma [mV]');
 
 save('2damped.mat','t1','v1');
 
+load handel
+sound(y,Fs)
+
 %% Step current
 
 v0 = zeros(numel(num),1);
@@ -244,6 +261,8 @@ ylabel('Membrane potential at the soma [mV]');
 
 save('3step.mat','t2','v2');
 
+load handel
+sound(y,Fs)
 
 %% Channel dynamics at synapse, constant current again
 
@@ -252,11 +271,16 @@ save('3step.mat','t2','v2');
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = [];
+
+Iapp = 1.3*10^(-9)*0.5887;
 
 tic
 [t3,v3] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
 toc
+
+% Steady-state voltage
+clear('vSS');
+vSS = -inv(A)*B*(u.*Iapp);
 
 tau = Rm.*Cm;
 
@@ -267,18 +291,48 @@ title('Membrane potential at the soma [mV], Shouval model, LTD'); xlabel('Dimens
 ylabel('Membrane potential at the soma [mV]');
 
 save('4shouvalLTD.mat','t3','v3');
+save('4shouvalLTDvSS.mat','vSS');
 
+% Plotting steady state voltage as func of dimensionless dist from soma ---
+total = zeros(size(num));
+figure(11); hold on;
+for j = 2:numel(num)
+    
+    total(j) = L(j);
+    
+    k = par(j);
+    
+    while k ~= 1
+        
+        total(j) = total(j)+L(k);
+        
+        k = par(k);
+    end
+    
+    plot([total(par(j)), total(j)], [vSS(par(j)) vSS(j)],'b')
+    
+end
+hold off
+xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
+title('Steady state voltage, Shouval model, LTD');
+
+load handel
+sound(y,Fs)
 
 %% Shouval calcium model, LTP
 
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = [];
+Iapp = 1.3*10^(-9)*1.2729;
 
 tic
 [t4,v4] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
 toc
+
+% Steady-state voltage
+clear('vSS');
+vSS = -inv(A)*B*(u.*Iapp);
 
 tau = Rm.*Cm;
 
@@ -289,17 +343,43 @@ title('Membrane potential at the soma [mV], Shouval model, LTP'); xlabel('Dimens
 ylabel('Membrane potential at the soma [mV]');
 
 save('5shouvalLTP.mat','t4','v4');
+save('5shouvalLTPvSS.mat','vSS')
 
+% Plotting steady state voltage as func of dimensionless dist from soma ---
+total = zeros(size(num));
+figure(12); hold on;
+for j = 2:numel(num)
+    
+    total(j) = L(j);
+    
+    k = par(j);
+    
+    while k ~= 1
+        
+        total(j) = total(j)+L(k);
+        
+        k = par(k);
+    end
+    
+    plot([total(par(j)), total(j)], [vSS(par(j)) vSS(j)],'b')
+    
+end
+hold off
+xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
+title('Steady state voltage, Shouval model, LTP');
+
+load handel
+sound(y,Fs)
 
 %% Shouval calcium model (LTP) with NE, 0 min post-NE
 
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = [];
+Iapp = @(t) 1.803*(1.3*10^(-9))*(t>=10000 & t<=20000);
 
 tic
-[t5,v5] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+[t5,v5] = ode23(@(t,v) A*v + B*(u.*Iapp(t)),tspan,v0);
 toc
 
 tau = Rm.*Cm;
@@ -312,16 +392,18 @@ ylabel('Membrane potential at the soma [mV]');
 
 save('6NE_0.mat','t5','v5');
 
+load handel
+sound(y,Fs)
 
 %% Shouval calcium model (LTP) with NE, 30 min post-NE
 
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = [];
+Iapp = @(t) 1.6941*(1.3*10^(-9))*(t>=10000 & t<=20000);
 
 tic
-[t6,v6] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+[t6,v6] = ode23(@(t,v) A*v + B*(u.*Iapp(t)),tspan,v0);
 toc
 
 tau = Rm.*Cm;
@@ -334,15 +416,18 @@ ylabel('Membrane potential at the soma [mV]');
 
 save('7NE_30.mat','t6','v6');
 
+load handel
+sound(y,Fs)
+
 %% Shouval calcium model (LTP) with NE, 90 min post-NE
 
 v0 = zeros(numel(num),1);
 tspan = [0 5*10^4];
 
-Iapp = [];
+Iapp = @(t) 1.3611*(1.3*10^(-9))*(t>=10000 & t<=15000);
 
 tic
-[t7,v7] = ode23(@(t,v) A*v + B*(u.*Iapp),tspan,v0);
+[t7,v7] = ode23(@(t,v) A*v + B*(u.*Iapp(t)),tspan,v0);
 toc
 
 tau = Rm.*Cm;
@@ -355,36 +440,7 @@ ylabel('Membrane potential at the soma [mV]');
 
 save('8NE_90.mat','t7','v7');
 
-
-
-
-
-
-
-
-
-%% UNUSED
-% %% Time-varying current
-% 
-% % dvdt = M*D*r(t) ?
-% 
-% % (2.39) dydt = inv(M)*A*M*y + inv(M)*B*u 
-% %        v = M*y
-% tspan = [0,5e4]; % µs
-% 
-% M = diag(cm.^(-1/2));
-% D = M\A*M;
-% e = eig(D);
-% capLamb = diag(e);
-% % or (2.43) capLamb = inv(D)*(inv(M)*A*M)*D ?
-% F = D'*inv(M)*B;
-% 
-% init = [];      % Initial conditions
-% 
-% %%
-% tic
-% [t1,v1] = ode23(@(t,v) M*D*r,tspan,init);
-% toc
-
+load handel
+sound(y,Fs)
 
 
