@@ -90,7 +90,7 @@ endIndex = find(ends==1);
 
 
 
-%% Compartment lengths and length constraint--------------------------------
+% Compartment lengths and length constraint--------------------------------
 
 % Taking true length of soma from -1 to 1 to be length between num = 1 and num = 2
 
@@ -214,8 +214,17 @@ plot(t./tau, v(:,1))
 ylabel('Membrane potential at the soma [mV]'); xlabel('Dimensionless Time');
 title('Membrane potential at the soma [mV]');
 
-save('1regular.mat','t','v');
+save('1regulart.mat','t');
 save('1regularvSS.mat','vSS');
+v01 = v(:,1:400);
+save('1regularv1.mat','v01');
+v02 = v(:,401:800);
+save('1regularv2.mat','v02');
+v03 = v(:,801:1200);
+save('1regularv3.mat','v03');
+v04 = v(:,1201:end);
+save('1regularv4.mat','v04');
+
 
 load handel
 sound(y,Fs)
@@ -237,7 +246,16 @@ plot(t1./tau, v1(:,1))
 title('Membrane potential at the soma [mV] in response to damped sinusoid'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('2damped.mat','t1','v1');
+save('2dampedt.mat','t1');
+clear v01 v02 v03 v04
+v01 = v1(:,1:400);
+save('2dampedv1.mat','v01');
+v02 = v1(:,401:800);
+save('2dampedv2.mat','v02');
+v03 = v1(:,801:1200);
+save('2dampedv3.mat','v03');
+v04 = v1(:,1201:end);
+save('2dampedv4.mat','v04');
 
 load handel
 sound(y,Fs)
@@ -259,7 +277,16 @@ plot(t2./tau, v2(:,1))
 title('Membrane potential at the soma [mV] in response to step current'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('3step.mat','t2','v2');
+save('3stept.mat','t2');
+clear v01 v02 v03 v04
+v01 = v2(:,1:400);
+save('3stepv1.mat','v01');
+v02 = v2(:,401:800);
+save('3stepv2.mat','v02');
+v03 = v2(:,801:1200);
+save('3stepv3.mat','v03');
+v04 = v2(:,1201:end);
+save('3stepv4.mat','v04');
 
 load handel
 sound(y,Fs)
@@ -290,8 +317,17 @@ plot(t3./tau, v3(:,1))
 title('Membrane potential at the soma [mV], Shouval model, LTD'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('4shouvalLTD.mat','t3','v3');
+save('4shouvalLTDt.mat','t3');
 save('4shouvalLTDvSS.mat','vSS');
+clear v01 v02 v03 v04
+v01 = v3(:,1:400);
+save('4shouvalLTDv1.mat','v01');
+v02 = v3(:,401:800);
+save('4shouvalLTDv2.mat','v02');
+v03 = v3(:,801:1200);
+save('4shouvalLTDv3.mat','v03');
+v04 = v3(:,1201:end);
+save('4shouvalLTDv4.mat','v04');
 
 % Plotting steady state voltage as func of dimensionless dist from soma ---
 total = zeros(size(num));
@@ -315,6 +351,7 @@ end
 hold off
 xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
 title('Steady state voltage, Shouval model, LTD');
+
 
 load handel
 sound(y,Fs)
@@ -342,8 +379,18 @@ plot(t4./tau, v4(:,1))
 title('Membrane potential at the soma [mV], Shouval model, LTP'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('5shouvalLTP.mat','t4','v4');
+save('5shouvalLTPt.mat','t4');
 save('5shouvalLTPvSS.mat','vSS')
+clear v01 v02 v03 v04
+v01 = v4(:,1:400);
+save('5shouvalLTPv1.mat','v01');
+v02 = v4(:,401:800);
+save('5shouvalLTPv2.mat','v02');
+v03 = v4(:,801:1200);
+save('5shouvalLTPv3.mat','v03');
+v04 = v4(:,1201:end);
+save('5shouvalLTPv4.mat','v04');
+
 
 % Plotting steady state voltage as func of dimensionless dist from soma ---
 total = zeros(size(num));
@@ -368,6 +415,7 @@ hold off
 xlabel('Dimensionless distance from soma'); ylabel('Voltage (mV)');
 title('Steady state voltage, Shouval model, LTP');
 
+% SAVE V4 TOO
 load handel
 sound(y,Fs)
 
@@ -390,7 +438,17 @@ plot(t5./tau, v5(:,1))
 title('Membrane potential at the soma [mV], 0 min post-NE'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('6NE_0.mat','t5','v5');
+
+save('6NE_0.mat','t5');
+clear v01 v02 v03 v04
+v01 = v5(:,1:400);
+save('6NE_0v1.mat','v01');
+v02 = v5(:,401:800);
+save('6NE_0v2.mat','v02');
+v03 = v5(:,801:1200);
+save('6NE_0v3.mat','v03');
+v04 = v5(:,1201:end);
+save('6NE_0v4.mat','v04');
 
 load handel
 sound(y,Fs)
@@ -414,7 +472,16 @@ plot(t6./tau, v6(:,1))
 title('Membrane potential at the soma [mV], 30 min post-NE'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('7NE_30.mat','t6','v6');
+save('7NE_30.mat','t6');
+clear v01 v02 v03 v04
+v01 = v6(:,1:400);
+save('7NE_30v1.mat','v01');
+v02 = v6(:,401:800);
+save('7NE_30v2.mat','v02');
+v03 = v6(:,801:1200);
+save('7NE_30v3.mat','v03');
+v04 = v6(:,1201:end);
+save('7NE_30v4.mat','v04');
 
 load handel
 sound(y,Fs)
@@ -438,9 +505,51 @@ plot(t7./tau, v7(:,1))
 title('Membrane potential at the soma [mV], 90 min post-NE'); xlabel('Dimensionless Time');
 ylabel('Membrane potential at the soma [mV]');
 
-save('8NE_90.mat','t7','v7');
+save('8NE_90.mat','t7');
+clear v01 v02 v03 v04
+v01 = v7(:,1:400);
+save('8NE_90v1.mat','v01');
+v02 = v7(:,401:800);
+save('8NE_90v2.mat','v02');
+v03 = v7(:,801:1200);
+save('8NE_90v3.mat','v03');
+v04 = v7(:,1201:end);
+save('8NE_90v4.mat','v04');
+
 
 load handel
 sound(y,Fs)
 
+%% Shouval calcium model (LTP), No NE
 
+v0 = zeros(numel(num),1);
+tspan = [0 5*10^4];
+
+Iapp = @(t) (1.3*10^(-9))*(t>=10000 & t<=15000);
+
+tic
+[t8,v8] = ode23(@(t,v) A*v + B*(u.*Iapp(t)),tspan,v0);
+toc
+
+tau = Rm.*Cm;
+
+figure;
+clf
+plot(t8./tau, v8(:,1))
+title('Membrane potential at the soma [mV], No NE'); xlabel('Dimensionless Time');
+ylabel('Membrane potential at the soma [mV]');
+
+save('9NE_No.mat','t8');
+clear v01 v02 v03 v04
+v01 = v8(:,1:400);
+save('9NE_Nov1.mat','v01');
+v02 = v8(:,401:800);
+save('9NE_Nov2.mat','v02');
+v03 = v8(:,801:1200);
+save('9NE_Nov3.mat','v03');
+v04 = v8(:,1201:end);
+save('8NE_90v4.mat','v04');
+
+
+load handel
+sound(y,Fs)
